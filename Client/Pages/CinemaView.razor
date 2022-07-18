@@ -1,0 +1,157 @@
+﻿@page "/Cinema/{cinemaID}"
+@using System.Text.Json
+@using Cinetown.Shared
+@using Shared
+@using System.Net.Http.Json
+@using Newtonsoft.Json
+@inject HttpClient Http
+@inject Microsoft.AspNetCore.Components.NavigationManager navigationManager
+@using Shared
+
+@if(cinema != null){
+    <h3>@cinema.Name</h3>
+}
+
+<PageTitle>Movie List</PageTitle>
+<div class="text-center">
+    <h3>Book Your Seat Now!!</h3>
+</div>
+
+<div class="row">
+    @if(movies.Any())
+    {
+        <div class="alert alert-secondary mt-4">
+           <button class="btn btn-primary btn-time m-2" @onclick='(() => onDayClick("Mon"))'>Monday</button>
+           <button class="btn btn-primary btn-time m-2" @onclick='(() => onDayClick("Tue"))'>Tuesday</button>
+           <button class="btn btn-primary btn-time m-2" @onclick='(() => onDayClick("Wed"))'>Wednesday</button>
+           <button class="btn btn-primary btn-time m-2" @onclick='(() => onDayClick("Thu"))'>Thursday</button>
+           <button class="btn btn-primary btn-time m-2" @onclick='(() => onDayClick("Fri"))'>Friday</button>
+           <button class="btn btn-primary btn-time m-2" @onclick='(() => onDayClick("Sat"))'>Saturday</button>
+           <button class="btn btn-primary btn-time m-2" @onclick='(() => onDayClick("Sun"))'>Sunday</button>
+        </div>
+        @foreach(var movie in movies)
+        {
+            <div class="card mb-5 ml-5 mr-5">
+                <NavLink href="@($"/MovieDetails/{cinema.Id}/{@movie.Id}")" Match="NavLinkMatch.All">
+                  <div class="card-header">
+                    <h2>@movie.Title</h2>
+                  </div> 
+               </NavLink>
+              <div class="card-body">
+                <h5 class="card-img"><svg class="bd-placeholder-img img-thumbnail" width="200" height="200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A generic square placeholder image with a white border around it, making it resemble a photograph taken with an old instant camera: 200x200" preserveAspectRatio="xMidYMid slice" focusable="false"><title>A generic square placeholder image with a white border around it, making it resemble a photograph taken with an old instant camera</title><rect width="100%" height="100%" fill="#868e96"></rect><text x="50%" y="50%" fill="#dee2e6" dy=".3em">200x200</text></svg></h5>
+                <h5 class="card-title">Genre: <b>@movie.Genre</b></h5>
+                <h5 class="card-title">Director: <b>@movie.Director</b></h5>
+                <h5 class="card-title">Cast: <b>@movie.Cast</b></h5>
+                <h5 class="card-title">Year: <b>@movie.Year</b></h5>
+                <p class="card-title">Notes: <b>@movie.Notes</b></p>
+
+                <div class="alert alert-secondary mt-4">
+                         @switch (dayTime)
+                        {
+                            case "Mon":
+                                @foreach (var time in @movie.RunningTimes.Mon)
+                                {
+                                     <NavLink href="@($"/MovieBooking/{@cinema.Id}/{@movie.Id}/Monday/{@time}")" class="btn btn-primary btn-time m-2">@time</NavLink>
+                                }
+                            break;
+
+                            case "Tue":
+                                @foreach (var time in @movie.RunningTimes.Tue)
+                                {
+                                     <NavLink href="@($"/MovieBooking/{@cinema.Id}/{@movie.Id}/Tuesday/{@time}")" class="btn btn-primary btn-time m-2">@time</NavLink>
+                                }
+                            break;
+
+                            case "Wed":
+                                @foreach (var time in @movie.RunningTimes.Mon)
+                                {
+                                     <NavLink href="@($"/MovieBooking/{@cinema.Id}/{@movie.Id}/Wednesday/{@time}")" class="btn btn-primary btn-time m-2">@time</NavLink>
+                                }
+                            break;
+
+                            case "Thu":
+                                @foreach (var time in @movie.RunningTimes.Thu)
+                                {
+                                    <NavLink href="@($"/MovieBooking/{@cinema.Id}/{@movie.Id}/Thursday/{@time}")" class="btn btn-primary btn-time m-2">@time</NavLink>
+                                }
+                            break;
+
+                            case "Fri":
+                                @foreach (var time in @movie.RunningTimes.Fri)
+                                {
+                                     <NavLink href="@($"/MovieBooking/{@cinema.Id}/{@movie.Id}/Friday/{@time}")" class="btn btn-primary btn-time m-2">@time</NavLink>
+                                }
+                            break;
+                            
+                            case "Sat":
+                                @foreach (var time in @movie.RunningTimes.Sat)
+                                {
+                                    <NavLink href="@($"/MovieBooking/{@cinema.Id}/{@movie.Id}/Saturday/{@time}")" class="btn btn-primary btn-time m-2">@time</NavLink>
+                                }
+                            break;
+
+                            case "Sun":
+                                @foreach (var time in @movie.RunningTimes.Sun)
+                                {
+                                    <NavLink href="@($"/MovieBooking/{@cinema.Id}/{@movie.Id}/Sunday/{@time}")" class="btn btn-primary btn-time m-2">@time</NavLink>
+                                }
+                            break;
+
+                            default:
+                                @foreach (var time in @movie.RunningTimes.Mon)
+                                {
+                                    <NavLink href="@($"/MovieBooking/{@cinema.Id}/{@movie.Id}/Monday/{@time}")" class="btn btn-primary btn-time m-2">@time</NavLink>
+                                }
+                            break;
+                    }
+                   
+                </div>
+
+              </div>
+            </div>
+        }
+
+    }
+    else
+    {
+        <button class="btn btn-primary" type="button" disabled>
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          Loading Movies...
+        </button>
+    }
+    </div>
+@code {
+    [Parameter]
+    public string cinemaID { get; set; }
+    private Cinema cinema;
+    private HttpRequestMessage? httpRequestMessage;
+    private HttpResponseMessage? httpResponseMessage;
+    private HttpClient? client;
+    private string dayOfWeek = System.DateTime.Now.DayOfWeek.ToString();
+
+    List<Cinema>? cinemas = new List<Cinema>();
+    List<Movie>? movies = new List<Movie>();
+    List<Movie>? ApiMovies = new List<Movie>();
+    public string? dayTime;
+    protected override async Task OnInitializedAsync()
+    {
+        this.cinemaID = cinemaID;
+        cinema = await Http.GetFromJsonAsync<Cinema>($"Cinema?id={cinemaID}");
+        //Load movies first if they are available
+        movies = await Http.GetFromJsonAsync<List<Movie>>($"Movie?cinemaId={cinemaID}");
+    }
+        private void ViewMovieDetails(string MovieId)
+    {
+        navigationManager.NavigateTo($"/MovieDetails/{MovieId}");
+    }
+    /// <summary>
+    /// This method will change Times based on Time.
+    /// </summary>
+    /// <param name="day"></param>
+    private void onDayClick(string day)
+    {
+        
+        dayTime = day;
+
+    }
+}

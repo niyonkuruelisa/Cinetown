@@ -1,0 +1,60 @@
+﻿@page "/Admin/Cinemas"
+@using System.Text.Json
+@using Cinetown.Shared
+@using Shared
+@using System.Net.Http.Json
+@using Newtonsoft.Json
+@inject HttpClient Http
+@inject Microsoft.AspNetCore.Components.NavigationManager navigationManager
+
+<PageTitle>Movie List</PageTitle>
+<div class="text-center">
+    <h1>All Cinemas</h1>
+</div>
+
+<div class="row ">
+    @if(cinemas.Any()){
+
+    
+        @foreach(var cinema in cinemas)
+            {
+            <div class="card m-2" style="width: 18rem;">
+                <NavLink class="nav-link" href="@($"/Admin/Cinema/Movies/{cinema.Id.ToString()}")" Match="NavLinkMatch.All">
+                    <svg class="bd-placeholder-img img-thumbnail" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A generic square placeholder image with a white border around it, making it resemble a photograph taken with an old instant camera: 200x200" preserveAspectRatio="xMidYMid slice" focusable="false"><title>A generic square placeholder image with a white border around it, making it resemble a photograph taken with an old instant camera</title><rect width="100%" height="100%" fill="#868e96"></rect><text x="50%" y="50%" fill="#dee2e6" dy=".3em">200x200</text></svg>
+                    <div class="card-body">
+                    <h5>@cinema.Name</h5>
+                    </div>
+                </NavLink>
+            </div>
+        }
+    }else
+    {
+        <button class="btn btn-primary" type="button" disabled>
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          Loading Cinemas...
+        </button>
+    }
+
+</div>
+
+@code{
+
+    private HttpRequestMessage? httpRequestMessage;
+    private HttpResponseMessage? httpResponseMessage;
+    private HttpClient? client;
+
+    List<Cinema>? cinemas = new List<Cinema>();
+
+    /// <summary>
+    /// This Method will consume Api and Save Data to database then retrive Data back to UI.
+    /// </summary>
+    /// <returns></returns>
+
+    protected override async Task OnInitializedAsync()
+    {
+        //get all cinemas
+        cinemas = await Http.GetFromJsonAsync<List<Cinema>>("Cinema/All");
+    }
+
+
+}

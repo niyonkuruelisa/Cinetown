@@ -1,0 +1,147 @@
+﻿@using Cinetown.Shared
+@using Shared
+@inject HttpClient Http;
+<style>
+    .seat {
+  background-color:cadetblue;
+  height: 12px;
+  width: 15px;
+  margin: 3px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+    }
+
+    .seat.selected {
+      background-color: coral;
+    }
+
+    .seat.occupied {
+      background-color: #444451;
+    }
+  .showcase .seat:not(.occupied):hover {
+  cursor: default;
+  transform: scale(1);
+}
+
+.seat:nth-of-type(5) {
+  margin-right: 48px;
+}
+.seat:not(.occupied):hover {
+  cursor: pointer;
+  transform: scale(1.2);
+}
+
+.showcase .seat:not(.occupied):hover {
+  cursor: default;
+  transform: scale(1);
+}
+.showcase {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: #777;
+  list-style-type: none;
+  display: flex;
+  justify-content: space-between;
+}
+
+.showcase li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 10px;
+}
+
+.showcase li small {
+  margin-left: 10px;
+}
+.row {
+  display: flex;
+}
+.container {
+  perspective: 1000px;
+  margin-bottom: 30px;
+}
+p.text {
+  margin: 5px 0;
+}
+
+p.text span {
+    
+  color: coral;
+}
+.divider:after,
+.divider:before {
+content: "";
+flex: 1;
+height: 1px;
+background: #eee;
+}
+</style>
+
+<div class="text-center">
+        <div className="container w-75 text-center border mt-4">
+			<h2>Screen</h2>
+		</div>
+		<div className="container w-75 text-center border">
+			<h2>Front Row</h2>
+		</div>
+        <ul class="showcase">
+            <li>
+            <div class="seat"></div>
+            <small>N/A</small>
+            </li>
+
+            <li>
+            <div class="seat occupied"></div>
+            <small>Occupied</small>
+            </li>
+        </ul>
+        <div class="container text-center">
+            @for(int row =0;row<10;row++)
+                {
+                                
+                    <div class="row text-center">
+                    @for(int column =0;column< 10;column++)
+                    {
+                        var col = row;
+                        var rw = column;
+                        <div class="seat @seats[row,column].state"></div>
+                    }
+                    </div>
+                }
+        </div>
+
+</div>
+        
+@code {
+    [Parameter]
+    public List<Seat>? occupiedSeats { get; set;}
+    private Seat[,] seats = new Seat[10,10];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await createBookings();
+    }
+
+    private async Task createBookings()
+    {
+
+        // Reset selected Seats
+        for(int row = 0; row <10; row++)
+        {
+            for(int column = 0; column<10;column++)
+            {
+                seats[row, column] = new Seat { id = Guid.NewGuid().ToString(), row = row, column = column,state = "N/A" };
+
+            }
+        }
+        //Add Occupied Seats
+        foreach (var occupiedSeat in occupiedSeats)
+        {
+            seats[occupiedSeat.row, occupiedSeat.column] = new Seat { id = occupiedSeat.id, row = occupiedSeat.row, column = occupiedSeat.column,state = "occupied" };
+        }
+
+    }
+
+}

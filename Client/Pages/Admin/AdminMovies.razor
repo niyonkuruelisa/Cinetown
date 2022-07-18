@@ -1,0 +1,214 @@
+﻿@page "/Admin/movies"
+@using Cinetown.Shared
+@using Shared
+@inject HttpClient Http
+<h3>Movie Management</h3>
+<div class="row">
+
+    @*Start movie column*@
+    <div class="col">
+      
+        @if (movies.Any())
+        {
+            <div class="alert alert-secondary mt-4">
+                <button class="btn btn-primary btn-time m-2" @onclick='(() => onDayClick("Monday"))'>Monday</button>
+                <button class="btn btn-primary btn-time m-2" @onclick='(() => onDayClick("Tuesday"))'>Tuesday</button>
+                <button class="btn btn-primary btn-time m-2" @onclick='(() => onDayClick("Wednesday"))'>Wednesday</button>
+                <button class="btn btn-primary btn-time m-2" @onclick='(() => onDayClick("Thursday"))'>Thursday</button>
+                <button class="btn btn-primary btn-time m-2" @onclick='(() => onDayClick("Friday"))'>Friday</button>
+                <button class="btn btn-primary btn-time m-2" @onclick='(() => onDayClick("Saturday"))'>Saturday</button>
+                <button class="btn btn-primary btn-time m-2" @onclick='(() => onDayClick("Sunday"))'>Sunday</button>
+            </div>
+            foreach (var movie in movies)
+            {
+                <div class="card mb-2 ml-2 mr-5">
+                    
+                    <div class="card-header">
+                        <h2>@movie.Title</h2>
+                    </div> 
+                    <div class="card-body">
+                        <h5 class="card-img"><svg class="bd-placeholder-img img-thumbnail" width="200" height="200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A generic square placeholder image with a white border around it, making it resemble a photograph taken with an old instant camera: 200x200" preserveAspectRatio="xMidYMid slice" focusable="false"><title>A generic square placeholder image with a white border around it, making it resemble a photograph taken with an old instant camera</title><rect width="100%" height="100%" fill="#868e96"></rect><text x="50%" y="50%" fill="#dee2e6" dy=".3em">200x200</text></svg></h5>
+                        <h5 class="card-title">Genre: <b>@movie.Genre</b></h5>
+                        <h5 class="card-title">Director: <b>@movie.Director</b></h5>
+                        <h5 class="card-title">Cast: <b>@movie.Cast</b></h5>
+                        <h5 class="card-title">Year: <b>@movie.Year</b></h5>
+                        <p class="card-title">Notes: <b>@movie.Notes</b></p>
+
+                        <div class="alert alert-secondary mt-4">
+                                    @switch (dayTime)
+                                {
+                                    case "Monday":
+                                        @foreach (var time in @movie.RunningTimes.Mon)
+                                        {
+                                                <button @onclick="(() => ShowMovieBookings(movie.Id,time))" class="btn btn-primary btn-time m-2">@time</button>
+                                        }
+                                    break;
+
+                                    case "Tuesday":
+                                        @foreach (var time in @movie.RunningTimes.Tue)
+                                        {
+                                                <button @onclick="(() => ShowMovieBookings(movie.Id,time))" class="btn btn-primary btn-time m-2">@time</button>
+                                        }
+                                    break;
+
+                                    case "Wednesday":
+                                        @foreach (var time in @movie.RunningTimes.Mon)
+                                        {
+                                                <button @onclick="(() => ShowMovieBookings(movie.Id,time))" class="btn btn-primary btn-time m-2">@time</button>
+                                        }
+                                    break;
+
+                                    case "Thursday":
+                                        @foreach (var time in @movie.RunningTimes.Thu)
+                                        {
+                                            <button @onclick="(() => ShowMovieBookings(movie.Id,time))" class="btn btn-primary btn-time m-2">@time</button>
+                                        }
+                                    break;
+
+                                    case "Friday":
+                                        @foreach (var time in @movie.RunningTimes.Fri)
+                                        {
+                                                <button @onclick="(() => ShowMovieBookings(movie.Id,time))" class="btn btn-primary btn-time m-2">@time</button>
+                                        }
+                                    break;
+                            
+                                    case "Saturday":
+                                        @foreach (var time in @movie.RunningTimes.Sat)
+                                        {
+                                            <button @onclick="(() => ShowMovieBookings(movie.Id,time))" class="btn btn-primary btn-time m-2">@time</button>
+                                        }
+                                    break;
+
+                                    case "Sunday":
+                                        @foreach (var time in @movie.RunningTimes.Sun)
+                                        {
+                                            <button @onclick="(() => ShowMovieBookings(movie.Id,time))" class="btn btn-primary btn-time m-2">@time</button>
+                                        }
+                                    break;
+
+                                    default:
+                                        @foreach (var time in @movie.RunningTimes.Mon)
+                                        {
+                                            <button @onclick="(() => ShowMovieBookings(movie.Id,time))" class="btn btn-primary btn-time m-2">@time</button>
+                                        }
+                                    break;
+                            }
+                   
+                        </div>
+
+                    </div>
+                </div>
+
+            }
+ 
+        }else
+        {
+            <button class="btn btn-primary" type="button" disabled>
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Loading Movies...
+            </button>
+        }
+    </div>
+    @*End movie column*@
+
+    @*Start movie details column*@
+    <div class="col">
+
+        @if(isMovieDetailsAvailable )
+        {
+            <h3>Movie Bookings</h3>
+            @if (bookings.Any())
+            {
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Names</th>
+                      <th scope="col">Emails</th>
+                      <th scope="col">Seats</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                   @foreach (var booking in bookings)
+                  {
+                    <tr>
+                      <td>@booking.Name</td>
+                      <td>@booking.Email</td>
+                      <td>
+                         @booking.seats.Count
+
+                         @*@foreach(var seat in @booking.seats)
+                         {
+                             <p>{Row: @seat.row , Column: @seat.column}</p>
+                         }*@
+                      </td>
+                    </tr>
+                  }
+                  </tbody>
+                </table>
+            }
+            else if(bookings == null)
+            {
+                <button class="btn btn-primary" type="button" disabled>
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Loading Bookings...
+                </button>
+            }
+        }
+    </div>
+    @*End movie details column*@
+
+    @*Start Movie Seats Layout column*@
+    <div class="col">
+      @if(seats.Any()){
+          <SeatsComponent occupiedSeats="seats"/>
+      }
+    </div>
+    @*End Movie Seats Layout column*@
+  </div>
+@code {
+    // Get All Movies
+    private HttpRequestMessage? httpRequestMessage;
+    private HttpResponseMessage? httpResponseMessage;
+    private HttpClient? client;
+
+    List<Movie>? movies = new List<Movie>();
+    List<Booking>? bookings = new List<Booking>();
+    public string? dayTime = "Monday";
+    List<Seat>? seats = new List<Seat>();
+
+    //showing movie deatails
+    private bool isMovieDetailsAvailable = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Load movies first if they are available
+        movies = await Http.GetFromJsonAsync<List<Movie>>($"Movie/All");
+    }
+
+    private async Task ShowMovieBookings(int? movieId,string time)
+    {
+
+        isMovieDetailsAvailable = true;
+        seats = new List<Seat>();
+        // Get Bookings By Movie ID
+        bookings = await Http.GetFromJsonAsync<List<Booking>>($"Booking?movieID={movieId}&day={dayTime}&time={time}");
+        if (bookings.Any())
+        {
+            foreach(var booking in bookings)
+            {
+                seats.AddRange(booking.seats);
+            }
+        }
+
+    }
+
+    /// <summary>
+    /// This method will change Times based on Time.
+    /// </summary>
+    /// <param name="day"></param>
+    private void onDayClick(string day)
+    {
+        dayTime = day;
+
+    }
+}
